@@ -2,7 +2,7 @@ from .simple_rnn_layer import SimpleRNNLayer
 from .bidirectional_rnn_layer import BidirectionalRNNLayer
 from .embedding_layer import EmbeddingLayer
 import tensorflow as tf
-from nn.ffnn import FFNN
+from models.nn.ffnn import FFNN
 import torch as tc
 import numpy as np
 
@@ -66,10 +66,9 @@ class SimpleRNNManual:
         return f1_score(y_true, y_pred, average='macro')
     
     def load_full_npz(self, path: str):
-        data = np.load(path, allow_pickle=True)
-        config = data['config'].item()
+        data = np.load(path, allow_pickle=True).item()
+        config = data['config']
         weights = data['weights']
-
         self.load_from_config_and_weights(config, weights)
 
     def load_from_config_and_weights(self, config: dict, weights: list):
@@ -97,7 +96,12 @@ class SimpleRNNManual:
 
         layer_sizes = [dense_weights[0].shape[0]] + [w.shape[1] for w in dense_weights]
         dense_activations = config.get("dense_activations")
-        self.dense = FFNN(layer_sizes, activations_list=dense_activations, loss_function='cce')
+        self.dense = FFNN(
+            layer_sizes,
+            activations_list=dense_activations,
+            loss_function='cce',
+            weight_inits=['manual'] * (len(layer_sizes) - 1)
+        )
         for i, layer in enumerate(self.dense.layers):
             layer.weights = tc.tensor(dense_weights[i], dtype=tc.float32)
             layer.biases = tc.tensor(dense_biases[i], dtype=tc.float32)

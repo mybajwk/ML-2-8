@@ -1,7 +1,6 @@
 import torch as tc
 import numpy as np
-import tensorflow as tf
-from nn.activations import activation_functions
+from models.nn.activations import activation_functions
 
 class SimpleRNNLayer:
     def __init__(self, Wx: np.ndarray, Wh: np.ndarray, b: np.ndarray, activation='tanh'):

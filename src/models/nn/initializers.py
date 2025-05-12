@@ -37,5 +37,7 @@ class WeightInitializer:
                 return tc.empty((input_dim, output_dim)).uniform_(-limit, limit)
             else:
                 raise ValueError(f"Inisialisasi '{method}' tidak cocok untuk aktivasi '{activation}'")
+        elif method == 'manual':
+            return None
         else:
             raise ValueError("Metode inisialisasi bobot tidak dikenali")

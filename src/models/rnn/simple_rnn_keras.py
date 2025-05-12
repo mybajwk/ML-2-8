@@ -74,19 +74,20 @@ class SimpleRNNKeras:
     def save(self, path="model_simple_rnn.h5"):
         self.model.save(path)
 
-    def save_full_npz(self, path="model_simple_rnn.npz"):
-        weights = self.model.get_weights()
-        config = {
-            "rnn_units": self.rnn_units,
-            "dense_units": self.dense_units,
-            "dense_activations": self.dense_activations,
-            "embedding_dim": self.embedding_dim,
-            "max_vocab": self.max_vocab,
-            "max_len": self.max_len,
-            "bidirectional": self.bidirectional,
-            "dropout": self.dropout,
-            "learning_rate": self.learning_rate
+    def save_full_npz(self, path="model_simple_rnn.npy"):
+        data = {
+            "weights": self.model.get_weights(),
+            "config": {
+                "rnn_units": self.rnn_units,
+                "dense_units": self.dense_units,
+                "dense_activations": self.dense_activations,
+                "embedding_dim": self.embedding_dim,
+                "max_vocab": self.max_vocab,
+                "max_len": self.max_len,
+                "bidirectional": self.bidirectional,
+                "dropout": self.dropout,
+                "learning_rate": self.learning_rate
+            }
         }
-
-        np.savez_compressed(path, weights=weights, config=config)
+        np.save(path, data, allow_pickle=True)
         print(f"Saved full model to {path}")
