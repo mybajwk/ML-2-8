@@ -9,15 +9,18 @@ class ScratchLSTMClassifier:
             self.embedding = ScratchEmbedding(emb_w)
             self.dense = ScratchDense(d_w, d_b)
             self.lstm_specs = lstm_specs
+            self.lstm_layers = []
 
     def forward(self, x):
         H = self.embedding.forward(x)
+        self.lstm_layers = []
         for spec in self.lstm_specs:
             typ, return_seq, *weights = spec
             if typ == 'unidir':
                 lstm = ScratchLSTM(*weights[0])
                 H = lstm.forward(H, return_sequences=return_seq)
-            elif typ == 'bidir':
+                self.lstm_layers.append((typ, lstm))
+            else:
                 f_lstm = ScratchLSTM(*weights[0])
                 b_lstm = ScratchLSTM(*weights[1])
                 out_f = f_lstm.forward(H, return_sequences=return_seq)
@@ -27,11 +30,33 @@ class ScratchLSTMClassifier:
                     H = np.concatenate([out_f, out_b], axis=2)
                 else:
                     H = np.concatenate([out_f, out_b], axis=1)
-            else:
-                raise ValueError(f"Unknown LSTM type: {typ}")
+                self.lstm_layers.append((typ, f_lstm, b_lstm))
         if H.ndim == 3:
             H = H[:, -1, :]
+        self.last_input = H
         return self.dense.forward(H)
+
+    def backward(self, dL_dout):
+        dH = self.dense.backward(dL_dout)
+
+        for layer in reversed(self.lstm_layers):
+            if layer[0] == 'bidir':
+                f_lstm, b_lstm = layer[1], layer[2]
+                if dH.ndim == 3:
+                    D = dH.shape[2] // 2
+                    dH_f = dH[:, :, :D]
+                    dH_b = dH[:, :, D:]
+                    dX_f = f_lstm.backward(dH_f)
+                    dX_b = b_lstm.backward(dH_b[:, ::-1, :])
+                    dH = dX_f + dX_b[:, ::-1, :]
+                else:
+                    D = dH.shape[1] // 2
+                    dH_f = dH[:, :D]
+                    dH_b = dH[:, D:]
+                    dX_f = f_lstm.backward(dH_f)
+                    dX_b = b_lstm.backward(dH_b)
+                    dH = dX_f + dX_b
+        self.embedding.backward(dH)
 
     def save_npy(self, path):
         data = {
