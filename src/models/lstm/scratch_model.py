@@ -17,7 +17,7 @@ class ScratchLSTMClassifier:
             if typ == 'unidir':
                 lstm = ScratchLSTM(*weights[0])
                 H = lstm.forward(H, return_sequences=return_seq)
-            else:
+            elif typ == 'bidir':
                 f_lstm = ScratchLSTM(*weights[0])
                 b_lstm = ScratchLSTM(*weights[1])
                 out_f = f_lstm.forward(H, return_sequences=return_seq)
@@ -27,6 +27,8 @@ class ScratchLSTMClassifier:
                     H = np.concatenate([out_f, out_b], axis=2)
                 else:
                     H = np.concatenate([out_f, out_b], axis=1)
+            else:
+                raise ValueError(f"Unknown LSTM type: {typ}")
         if H.ndim == 3:
             H = H[:, -1, :]
         return self.dense.forward(H)

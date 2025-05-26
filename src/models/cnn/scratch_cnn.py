@@ -2,11 +2,11 @@ import numpy as np
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 
-from src.models.cnn.scratch_convolution import ScratchConv2D
-from src.models.cnn.scratch_dense import ScratchDense
-from src.models.cnn.scratch_flatten import ScratchFlatten
-from src.models.cnn.scratch_maxpool import ScratchMaxPooling2D
-from src.models.cnn.test import ScratchDropout
+from models.cnn.scratch_convolution import ScratchConv2D
+from models.cnn.scratch_dense import ScratchDense
+from models.cnn.scratch_flatten import ScratchFlatten
+from models.cnn.scratch_maxpool import ScratchMaxPooling2D
+from models.cnn.scratch_dropout import ScratchDropout
 class ScratchModel:
     def __init__(self, keras_model_path):
         keras_model = load_model(keras_model_path)
