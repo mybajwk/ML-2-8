@@ -1,5 +1,5 @@
 import numpy as np
-from src.models.cnn.tensor_activation import activation_functions_np
+from models.cnn.tensor_activation import activation_functions_np
 
 class ScratchConv2D:
     def __init__(self, weights, biases, padding='valid', strides=(1, 1), activation=None):
