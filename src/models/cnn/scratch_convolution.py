@@ -1,5 +1,5 @@
 import numpy as np
-
+from src.models.cnn.tensor_activation import activation_functions_np
 
 class ScratchConv2D:
     def __init__(self, weights, biases, padding='valid', strides=(1, 1), activation=None):
@@ -35,4 +35,9 @@ class ScratchConv2D:
                     output[:, i, j, k] = np.sum(
                         patch * self.weights[..., k][None, :, :, :], axis=(1, 2, 3)
                     ) + self.biases[k]
-        return np.maximum(0, output) if self.activation == 'relu' else output
+
+        # Generic activation support
+        if self.activation in activation_functions_np:
+            func = activation_functions_np[self.activation]
+            output = func(output)
+        return output

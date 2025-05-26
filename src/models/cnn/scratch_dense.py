@@ -1,5 +1,5 @@
 import numpy as np
-
+from src.models.cnn.tensor_activation import activation_functions_np
 
 class ScratchDense:
     def __init__(self, weights, biases, activation=None):
@@ -8,10 +8,7 @@ class ScratchDense:
         self.activation = activation
 
     def forward(self, x):
-        out = np.dot(x, self.weights) + self.biases
-        if self.activation == 'relu':
-            return np.maximum(0, out)
-        elif self.activation == 'softmax':
-            exps = np.exp(out - np.max(out, axis=1, keepdims=True))
-            return exps / np.sum(exps, axis=1, keepdims=True)
-        return out
+        output = np.dot(x, self.weights) + self.biases
+        if self.activation in activation_functions_np:
+            output = activation_functions_np[self.activation](output)
+        return output
