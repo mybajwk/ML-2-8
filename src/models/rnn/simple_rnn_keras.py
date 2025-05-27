@@ -88,19 +88,22 @@ class SimpleRNNKeras:
             metrics=metrics_to_use
         )
 
-    def train(self, epochs=10, batch_size=64, shuffle_data=True):
+    def train(self, epochs=10, batch_size=64, shuffle=True, verbose = 0):
         self.history = self.model.fit(
             self.X_train,
             self.y_train,
             validation_data=(self.X_valid, self.y_valid),
             epochs=epochs,
             batch_size=batch_size,
-            shuffle=shuffle_data
+            shuffle=shuffle,
+            verbose=verbose
         )
+        
+        return self.history
 
     def evaluate(self):
         y_pred = np.argmax(self.model.predict(self.X_test), axis=1)
-        return f1_score(self.y_test, y_pred, average='macro')
+        return (y_pred, f1_score(self.y_test, y_pred, average='macro'))
     
     def plot_loss(self):
         if not hasattr(self, 'history'):
