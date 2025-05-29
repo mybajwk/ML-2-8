@@ -6,4 +6,4 @@ class EmbeddingLayer:
         self.weights = tc.tensor(weights, dtype=tc.float32)
 
     def forward(self, x: tc.Tensor):
-        return self.weights[x]  # (batch, seq_len, embed_dim)
+        return self.weights[x] 

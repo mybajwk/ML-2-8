@@ -4,6 +4,7 @@ from tensorflow.keras.layers import Embedding, Dropout, Dense, SimpleRNN, Bidire
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
+import time
 
 class SimpleRNNKeras:
     def __init__(
@@ -59,7 +60,6 @@ class SimpleRNNKeras:
     
         for i, units in enumerate(self.rnn_units):
             current_rnn_activation = self.rnn_activations[i]
-            print(f"Adding RNN layer {i+1} with {units} units and activation {current_rnn_activation}")
             rnn_layer_instance = SimpleRNN(units, activation=current_rnn_activation, return_sequences=(i < len(self.rnn_units) - 1))
             if self.bidirectional:
                 rnn_layer_instance = Bidirectional(rnn_layer_instance) 
@@ -88,7 +88,9 @@ class SimpleRNNKeras:
             metrics=metrics_to_use
         )
 
-    def train(self, epochs=10, batch_size=64, shuffle=True, verbose = 0):
+    def train(self, epochs=10, batch_size=64, shuffle=True, verbose=0):
+        start_time = time.time()
+
         self.history = self.model.fit(
             self.X_train,
             self.y_train,
@@ -98,7 +100,11 @@ class SimpleRNNKeras:
             shuffle=shuffle,
             verbose=verbose
         )
-        
+
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"Training selesai dalam {duration:.2f} detik")
+
         return self.history
 
     def evaluate(self):
@@ -142,7 +148,7 @@ class SimpleRNNKeras:
     def save(self, path="model_simple_rnn.h5"):
         self.model.save(path)
 
-    def save_full_npz(self, path="model_simple_rnn.npy"):
+    def save_full_npy(self, path="model_simple_rnn.npy"):
         data = {
             "weights": self.model.get_weights(),
             "config": {

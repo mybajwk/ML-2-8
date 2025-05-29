@@ -72,7 +72,7 @@ class SimpleRNNManual:
         y_true = y_true.cpu().numpy()
         return f1_score(y_true, y_pred, average='macro')
     
-    def load_full_npz(self, path: str):
+    def load_full_npy(self, path: str):
         data = np.load(path, allow_pickle=True).item()
         config = data['config']
         weights = data['weights']
