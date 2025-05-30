@@ -62,6 +62,76 @@ Masuk ke folder `src/`, lalu buka dan jalankan salah satu notebook:
 ### 1. CNN
 ```bash
 # Inisialisasi model Keras
+def create_model_v1():   
+    model = models.Sequential([
+        layers.Conv2D(32, (3,3), activation='relu', input_shape=(32,32,3)), # Modifikasi Sesuai Keinginan
+        layers.MaxPooling2D((2,2)),
+        layers.Flatten(),
+        layers.Dense(10)
+    ])
+    return model
+
+# Deklarasi Fungsi Pelatih
+def train_model(model, version):
+    os.environ['PYTHONHASHSEED'] = '42'
+    random.seed(42)
+    np.random.seed(42)
+    tf.random.set_seed(42)
+    tf.config.experimental.enable_op_determinism()
+    tf.keras.utils.set_random_seed(42)
+    model.compile(
+        optimizer='adam',
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), # Sesuaikan loss function
+        metrics=['accuracy'] 
+    )
+    history = model.fit(
+        x_train, y_train,
+        epochs=20, # Sesuaikan Epoch
+        validation_data=(x_val, y_val),
+        batch_size=64, #Sesuaikan batch_size
+        shuffle=False,
+        verbose=2
+    )
+    test_loss, test_acc = model.evaluate(x_test, y_test, verbose=0)
+    print(f"Versi {version} - Akurasi Test: {test_acc:.4f}")
+    return history
+
+# Build & train model
+histories = []
+for i, create_fn in enumerate([create_model_v1], start=1): #Juga bisa run lebih dari 1 model 
+    os.environ['PYTHONHASHSEED'] = '42'
+    random.seed(42)
+    np.random.seed(42)
+    tf.random.set_seed(42)
+    tf.config.experimental.enable_op_determinism()
+    tf.keras.utils.set_random_seed(42)
+    model = create_fn()
+    print(f"\n--- Training Model Versi {i} ---")
+    history = train_model(model, version=i)
+    histories.append(history)
+
+# Evaluasi macro F1-score
+keras_preds = np.argmax(model.predict(x_test), axis=1)
+print("Keras F1 Score:", f1_score(y_test, keras_preds, average='macro'))
+
+# Simpan bobot dan konfigurasi ke .npy (untuk load ke implementasi manual)
+model.save('model1.h5')
+```
+
+```bash
+# Load konfigurasi dan bobot dari hasil training Keras (format .npy)
+scratch_model = ScratchModel("model1.h5")
+
+# Prediksi 
+scratch_preds = scratch_model.predict(x_test, batch_size=128)
+# Evaluasi macro F1-score
+print("Scratch F1 Score:", f1_score(y_test, keras_preds, average='macro'))
+
+```
+
+### 2. RNN
+```bash
+# Inisialisasi model Keras
 model = SimpleRNNKeras(
     max_vocab=10000,              # Ukuran maksimum kosakata (vocab size)
     max_len=100,                  # Panjang maksimum input sequence
@@ -104,8 +174,6 @@ y_pred = model.predict(x_token_ids)
 y_true = torch.tensor([...])
 f1 = model.evaluate(x_token_ids, y_true)
 ```
-
-### 2. RNN
 
 ### 3. LSTM
 

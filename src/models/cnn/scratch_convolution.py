@@ -36,7 +36,6 @@ class ScratchConv2D:
                         patch * self.weights[..., k][None, :, :, :], axis=(1, 2, 3)
                     ) + self.biases[k]
 
-        # Generic activation support
         if self.activation in activation_functions_np:
             func = activation_functions_np[self.activation]
             output = func(output)
