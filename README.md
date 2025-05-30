@@ -176,7 +176,68 @@ f1 = model.evaluate(x_token_ids, y_true)
 ```
 
 ### 3. LSTM
+```bash
+config = {
+    'n_layers': n,
+    'units': [64] * n,
+    'bidirectional': True  
+}
+start = time.time()
+model, hist, f1 = train_and_eval(config, f'layers={n}')
+end = time.time()
 
+label = f"{n} Layer"
+trainloss_dict[label] = hist.history['loss']
+valloss_dict[label] = hist.history['val_loss']
+durations.append((label, round(end - start, 2)))
+exp1.append((label, hist))
+
+# === Save Keras Model Info ===
+model.save_weights(f'model_lstm_{n}layer.weights.h5')
+emb_w = model.layers[1].get_weights()[0]
+d_w, d_b = model.layers[-1].get_weights()
+lstm_layers = [ly for ly in model.layers if isinstance(ly, (tf.keras.layers.LSTM, tf.keras.layers.Bidirectional))]
+
+def unpack_lstm(layer):
+    if isinstance(layer, tf.keras.layers.Bidirectional):
+        return_seq = layer.forward_layer.return_sequences
+        Wf, Uf, bf = layer.forward_layer.get_weights()
+        Wb, Ub, bb = layer.backward_layer.get_weights()
+        return ('bidir', return_seq, (Wf, Uf, bf), (Wb, Ub, bb))
+    else:
+        return_seq = layer.return_sequences
+        W, U, b = layer.get_weights()
+        return ('unidir', return_seq, (W, U, b))
+
+scratch_specs = [unpack_lstm(ly) for ly in lstm_layers]
+scratch_model = ScratchLSTMClassifier(emb_w, scratch_specs, d_w, d_b)
+
+# === Scratch Prediction & Comparison ===
+x_int = vectorizer(tf.constant(texts_test)).numpy()
+y_pred_keras = np.argmax(model.predict(ds_test), axis=1)
+pred_scratch = scratch_model.forward(x_int)
+y_pred_scratch = np.argmax(pred_scratch, axis=1)
+
+f1_scratch = f1_score(y_test, y_pred_scratch, average='macro')
+print(f"[{n} Layer] max|keras - scratch| = {np.max(np.abs(y_pred_keras - y_pred_scratch))}")
+print(f"[{n} Layer] macro-F1 Scratch: {f1_scratch:.4f}")
+
+npy_path = f"model_lstm_scratch_{n}layer.npy"
+scratch_model.save_npy(npy_path)
+```
+```bash
+# load
+npy_path = f"model_lstm_scratch_{n}layer.npy"
+scratch_model.save_npy(npy_path)
+
+scratch_loaded = ScratchLSTMClassifier()
+scratch_loaded.load_npy(npy_path)
+pred_loaded = scratch_loaded.forward(x_int)
+y_loaded = np.argmax(pred_loaded, axis=1)
+f1_loaded = f1_score(y_test, y_loaded, average='macro')
+print(f"[{n} Layer] max|scratch - loaded| = {np.max(np.abs(pred_scratch - pred_loaded))}")
+print(f"[{n} Layer] macro-F1 Scratch (Loaded): {f1_loaded:.4f}")
+```
 ---
 
 ## Pembagian Tugas Anggota Kelompok
