@@ -58,7 +58,7 @@ Masuk ke folder `src/`, lalu buka dan jalankan salah satu notebook:
 - cnn.ipynb (uji cnn)
 
 ---
-## Contoh Menggunakan Kode yang Kami Buat
+## Contoh Penggunaan Kode yang Kami Buat
 ### 1. CNN
 ```bash
 # Inisialisasi model Keras
